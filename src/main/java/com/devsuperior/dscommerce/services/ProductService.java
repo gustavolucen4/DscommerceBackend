@@ -3,11 +3,18 @@ package com.devsuperior.dscommerce.services;
 import com.devsuperior.dscommerce.dto.ProductDTO;
 import com.devsuperior.dscommerce.entities.Product;
 import com.devsuperior.dscommerce.repositories.ProductRepository;
+import com.devsuperior.dscommerce.services.exceptions.DatabaseExceptions;
+import com.devsuperior.dscommerce.services.exceptions.ResourceNotFoundExceptions;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 
 @Service
 public class ProductService {
@@ -16,14 +23,15 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDTO findById(Long id){
-        Product product = repository.findById(id).get();
+        Product product = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundExceptions("Recurso não encontrado!!"));
         return new ProductDTO(product);
     }
 
     @Transactional(readOnly = true)
     public Page<ProductDTO> findAll(Pageable pageable){
         Page<Product> productPage = repository.findAll(pageable);
-        return productPage.map(x -> new ProductDTO(x));
+        return productPage.map(ProductDTO::new);
     }
 
     @Transactional
@@ -42,13 +50,18 @@ public class ProductService {
         Product product =repository.getReferenceById(id);
         copyDtoToEntity(product, productDTO);
         product = repository.save(product);
-
         return new ProductDTO(product);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id){
-        repository.deleteById(id);
+        try {
+            repository.deleteById(id);
+        }catch (EmptyResultDataAccessException ex){
+            throw new ResourceNotFoundExceptions("Recurso não encontrado!!");
+        }catch (DataIntegrityViolationException ex){
+            throw new DatabaseExceptions("Falha de integridade referencial.");
+        }
     }
 
     private void copyDtoToEntity(Product product, ProductDTO productDTO){

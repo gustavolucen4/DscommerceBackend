@@ -3,7 +3,9 @@ package com.devsuperior.dscommerce.entities;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tb_user")
@@ -18,10 +20,17 @@ public class User {
     private String phone;
     private LocalDate birthDate;
     private String password;
-    private String roles;
 
     @OneToMany(mappedBy = "client")
     private List<Order> orders = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "tb_user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns =  @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles  = new HashSet<>();
 
     public User() {
     }
@@ -33,7 +42,6 @@ public class User {
         this.phone = phone;
         this.birthDate = birthDate;
         this.password = password;
-        this.roles = roles;
     }
 
     public Long getId() {
@@ -84,16 +92,11 @@ public class User {
         this.password = password;
     }
 
-    public String getRoles() {
-        return roles;
-    }
-
-    public void setRoles(String roles) {
-        this.roles = roles;
-    }
-
     public List<Order> getOrders() {
         return orders;
     }
 
+    public Set<Role> getRoles() {
+        return roles;
+    }
 }

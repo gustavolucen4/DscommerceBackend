@@ -19,7 +19,7 @@ public class Product {
     private String imgUrl;
 
 
-    @ManyToMany
+    @ManyToMany()
     @JoinTable(
             name = "tb_product_category",
             joinColumns = @JoinColumn(name = "product_id"),
@@ -90,6 +90,6 @@ public class Product {
     }
 
     public List<Order> getOrders(){
-        return items.stream().map(x -> x.getOrder()).toList();
+        return items.stream().map(OrderItem::getOrder).toList();
     }
 }

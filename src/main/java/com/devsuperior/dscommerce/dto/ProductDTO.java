@@ -3,10 +3,7 @@ package com.devsuperior.dscommerce.dto;
 import com.devsuperior.dscommerce.entities.Category;
 import com.devsuperior.dscommerce.entities.Product;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +11,13 @@ public class ProductDTO {
 
     private Long id;
     @Size(min = 3, max = 80, message = "O nome precisa ter de 3 a 80 caracteres.")
-    @NotBlank
+    @NotBlank(message = "Campo requerido")
     private String name;
     @Size(min = 10, message = "Descrição deve ter no mínimo 10 caracteres.")
-    @NotBlank
+    @NotBlank(message = "Campo requerido")
     private String description;
     @Positive
+    @NotNull(message = "Campo requerido")
     private Double price;
     private String imgUrl;
 
